@@ -24,23 +24,23 @@ class GameButtons extends StatelessWidget {
               state.status == GameStatus.created ? "START" : "RESET",
             ),
           ),
-          const SizedBox(width: 20),
-          DropdownButton<int>(
-            items: [3, 4, 5, 6]
-                .map(
-                  (e) => DropdownMenuItem(
-                    child: Text("${e}x$e"),
-                    value: e,
-                  ),
-                )
-                .toList(),
-            onChanged: (crossAxisCount) {
-              if (crossAxisCount != null && crossAxisCount != state.crossAxisCount) {
-                controller.changeGrid(crossAxisCount);
-              }
-            },
-            value: state.crossAxisCount,
-          ),
+          // const SizedBox(width: 20),
+          // DropdownButton<int>(
+          //   items: [3, 4, 5, 6]
+          //       .map(
+          //         (e) => DropdownMenuItem(
+          //           child: Text("${e}x$e"),
+          //           value: e,
+          //         ),
+          //       )
+          //       .toList(),
+          //   onChanged: (crossAxisCount) {
+          //     if (crossAxisCount != null && crossAxisCount != state.crossAxisCount) {
+          //       controller.changeGrid(crossAxisCount);
+          //     }
+          //   },
+          //   value: state.crossAxisCount,
+          // ),
         ],
       ),
     );

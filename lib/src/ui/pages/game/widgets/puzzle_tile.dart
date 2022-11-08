@@ -28,12 +28,13 @@ class PuzzleTile extends StatelessWidget {
           width: size - 2,
           height: size - 2,
           alignment: Alignment.center,
-          child: Text(
-            tile.value.toString(),
-            style: const TextStyle(
-              fontSize: 20,
-            ),
-          ),
+          child: Image.asset(tile.image!),
+          // Text(
+          //   tile.value.toString(),
+          //   style: const TextStyle(
+          //     fontSize: 20,
+          //   ),
+          // ),
         ),
       ),
     );

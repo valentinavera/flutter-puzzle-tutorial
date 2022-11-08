@@ -40,10 +40,10 @@ class GameState extends Equatable {
 
   @override
   List<Object?> get props => [
-        moves,
-        crossAxisCount,
-        puzzle,
-        solved,
-        status,
-      ];
+    moves,
+    crossAxisCount,
+    puzzle,
+    solved,
+    status,
+  ];
 }

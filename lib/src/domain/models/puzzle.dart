@@ -116,6 +116,7 @@ class Puzzle extends Equatable {
             value: value,
             position: position,
             correctPosition: position,
+            image: 'assets/conteneur/$value.png'
           );
           tiles.add(tile);
           value++;
@@ -234,7 +235,7 @@ class Puzzle extends Equatable {
 
   @override
   List<Object?> get props => [
-        tiles,
-        emptyPosition,
-      ];
+    tiles,
+    emptyPosition,
+  ];
 }
