@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_puzzle/src/domain/models/tile.dart';
 import 'package:my_puzzle/src/logic/puzzle/puzzle_cubit.dart';
+import 'package:my_puzzle/src/ui/utils/time_parser.dart';
 
 class PuzzleViewPage extends StatelessWidget {
   const PuzzleViewPage({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class PuzzleViewPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              MovesWidget(),
+              TimeAndMoves(),
               Padding(
                 padding: EdgeInsets.all(20),
                 child: AspectRatio(
@@ -32,18 +33,38 @@ class PuzzleViewPage extends StatelessWidget {
   }
 }
 
-class MovesWidget extends StatelessWidget {
-  const MovesWidget({Key? key}) : super(key: key);
+class TimeAndMoves extends StatelessWidget {
+  const TimeAndMoves({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: BlocBuilder<PuzzleCubit, PuzzleState>(
-        builder: (context, state) {
-          if(state is StartPuzzle) return Text("Moves: ${state.moves}");
-          return Container();
-        },
-      ),
+    final time = BlocProvider.of<PuzzleCubit>(context, listen: false).time;
+
+    return BlocBuilder<PuzzleCubit, PuzzleState>(
+      builder: (context, state) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ValueListenableBuilder<int>(
+              valueListenable: time,
+              builder: (_, time, icon) {
+                return Row(
+                  children: [
+                    icon!,
+                    Text(
+                      parseTime(time),
+                    ),
+                  ],
+                );
+              },
+              child: const Icon(
+                Icons.watch,
+              ),
+            ),
+            if(state is StartPuzzle) Text("Moves: ${state.moves}"),
+          ],
+        );
+      },
     );
   }
 }
@@ -53,8 +74,9 @@ class PuzzleGameInteractor extends StatelessWidget {
 
   void _puzzleCubitListener(BuildContext context, PuzzleState state){
     if(state is OnFinish){
-      BlocProvider.of<PuzzleCubit>(context).initPuzzle();
-      _showWinnerDialog(context);
+      final _puzzleFinishCubit = BlocProvider.of<PuzzleCubit>(context);
+      _puzzleFinishCubit.initPuzzle();
+      _showWinnerDialog(context, _puzzleFinishCubit);
     }
   }
 
@@ -98,6 +120,7 @@ class PuzzleGameInteractor extends StatelessWidget {
 
   void _showWinnerDialog(
     BuildContext context,
+    PuzzleCubit controller,
   ) {
     showDialog(
       context: context,
@@ -106,6 +129,8 @@ class PuzzleGameInteractor extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text("GREAT JOB"),
+            Text("moves: ${controller.puzzleState.moves}"),
+            Text("time: ${parseTime(controller.time.value)}"),
             const SizedBox(height: 20),
             TextButton(
               child: const Text("OK"),
@@ -171,10 +196,48 @@ class PuzzleButton extends StatelessWidget {
         builder: (context, state) {
           if(state is StartPuzzle){
             if( state.status == GameStatus.created){
-              return TextButton(
-                onPressed: () => _puzzleCubit.shuffle(), 
-                child: const Text(
-                  "Comenzar",
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => _puzzleCubit.shuffle(),
+                    icon: const Icon(
+                      Icons.replay_rounded,
+                    ),
+                    label: const Text(
+                      "START",
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  DropdownButton<int>(
+                    items: [3, 4, 5, 6]
+                        .map(
+                          (e) => DropdownMenuItem(
+                            child: Text("${e}x$e"),
+                            value: e,
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (crossAxisCount) {
+                      if (crossAxisCount != null && crossAxisCount != state.crossAxisCount) {
+                        _puzzleCubit.changeGrid(crossAxisCount);
+                      }
+                    },
+                    value: state.crossAxisCount,
+                  ),
+                ],
+              );
+            }
+            if( state.status == GameStatus.playing){
+              return Center(
+                child: TextButton.icon(
+                  onPressed: () => _puzzleCubit.shuffle(),
+                  icon: const Icon(
+                    Icons.replay_rounded,
+                  ),
+                  label: const Text(
+                    "RESET",
+                  ),
                 ),
               );
             }
