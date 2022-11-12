@@ -6,8 +6,23 @@ enum GameStatus {
   solved,
 }
 
-class PuzzleState extends Equatable {
-  const PuzzleState({
+abstract class PuzzleState extends Equatable{
+  const PuzzleState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class PuzzleInitial extends PuzzleState {
+  const PuzzleInitial();
+}
+
+class OnFinish extends PuzzleState {
+  const OnFinish ();
+}
+
+class StartPuzzle extends PuzzleState {
+  const StartPuzzle({
     required this.crossAxisCount,
     required this.puzzle,
     required this.solved,
@@ -20,14 +35,14 @@ class PuzzleState extends Equatable {
   final int moves;
   final GameStatus status;
 
-  PuzzleState copyWith({
+  StartPuzzle copyWith({
     int? crossAxisCount,
     int? moves,
     Puzzle? puzzle,
     bool? solved,
     GameStatus? status,
   }){
-    return PuzzleState(
+    return StartPuzzle(
       status: status ?? this.status,
       moves: moves ?? this.moves,
       crossAxisCount: crossAxisCount ?? this.crossAxisCount,
@@ -45,22 +60,3 @@ class PuzzleState extends Equatable {
     status,
   ];
 }
-
-class PuzzleInitial extends PuzzleState {
-  const PuzzleInitial({
-    required int crossAxisCount, 
-    required Puzzle puzzle, 
-    required bool solved, 
-    required int moves, 
-    required GameStatus status
-  }) : super(
-    crossAxisCount: crossAxisCount, 
-    puzzle: puzzle, 
-    solved: solved, 
-    moves: moves, 
-    status: status
-  );
-}
-
-// class OnFinish extends PuzzleState { csonst OnFinish() : super(crossAxisCount: 0, moves: 0, solved: true, puzzle: Puzzle.create(0), status: GameStatus.solved); }
-

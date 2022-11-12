@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_puzzle/src/domain/models/tile.dart';
-import 'package:my_puzzle/src/logic/cubit/puzzle_cubit.dart';
+import 'package:my_puzzle/src/logic/puzzle/puzzle_cubit.dart';
 
 class PuzzleViewPage extends StatelessWidget {
   const PuzzleViewPage({Key? key}) : super(key: key);
@@ -30,6 +30,71 @@ class PuzzleViewPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class MovesWidget extends StatelessWidget {
+  const MovesWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: BlocBuilder<PuzzleCubit, PuzzleState>(
+        builder: (context, state) {
+          if(state is StartPuzzle) return Text("Moves: ${state.moves}");
+          return Container();
+        },
+      ),
+    );
+  }
+}
+
+class PuzzleGameInteractor extends StatelessWidget {
+  const PuzzleGameInteractor({Key? key}) : super(key: key);
+
+  void _puzzleCubitListener(BuildContext context, PuzzleState state){
+    if(state is OnFinish){
+      BlocProvider.of<PuzzleCubit>(context).initPuzzle();
+      _showWinnerDialog(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final _puzzleCubit = BlocProvider.of<PuzzleCubit>(context);
+    _puzzleCubit.initPuzzle();
+
+    return Container(
+      color: Colors.black12,
+      child: BlocConsumer<PuzzleCubit, PuzzleState>(
+        listener: _puzzleCubitListener,
+        bloc: _puzzleCubit,
+        builder: (context, state) {
+          if(state is StartPuzzle){
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final tileSize = constraints.maxWidth / state.crossAxisCount;
+                return AbsorbPointer(
+                  absorbing: state.status != GameStatus.playing,
+                  child: Stack(
+                    children: state.puzzle.tiles
+                      .map(
+                        (e) => PuzzleTile(
+                          tile: e,
+                          size: tileSize,
+                          onTap: () => _puzzleCubit.onTileTapped(e),
+                        ),
+                      )
+                      .toList(),
+                  ),
+                );
+              },
+            );
+          }
+          return Container();
+        },
+      ),
+    );
+  }
 
   void _showWinnerDialog(
     BuildContext context,
@@ -48,58 +113,6 @@ class PuzzleViewPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class MovesWidget extends StatelessWidget {
-  const MovesWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: BlocBuilder<PuzzleCubit, PuzzleState>(
-        builder: (context, state) {
-          return Text("Moves: ${state.moves}");
-        },
-      ),
-    );
-  }
-}
-
-class PuzzleGameInteractor extends StatelessWidget {
-  const PuzzleGameInteractor({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final _puzzleCubit = BlocProvider.of<PuzzleCubit>(context, listen: true);
-
-    return Container(
-      color: Colors.black12,
-      child: BlocBuilder<PuzzleCubit, PuzzleState>(
-        bloc: _puzzleCubit,
-        builder: (context, state) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final tileSize = constraints.maxWidth / state.crossAxisCount;
-              return AbsorbPointer(
-                absorbing: state.status != GameStatus.playing,
-                child: Stack(
-                  children: state.puzzle.tiles
-                    .map(
-                      (e) => PuzzleTile(
-                        tile: e,
-                        size: tileSize,
-                        onTap: () => _puzzleCubit.onTileTapped(e),
-                      ),
-                    )
-                    .toList(),
-                ),
-              );
-            },
-          );
-        },
       ),
     );
   }
@@ -156,20 +169,17 @@ class PuzzleButton extends StatelessWidget {
       child: BlocBuilder<PuzzleCubit, PuzzleState>(
         bloc: _puzzleCubit,
         builder: (context, state) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton.icon(
-                onPressed: () => _puzzleCubit.shuffle(),
-                icon: const Icon(
-                  Icons.replay_rounded,
+          if(state is StartPuzzle){
+            if( state.status == GameStatus.created){
+              return TextButton(
+                onPressed: () => _puzzleCubit.shuffle(), 
+                child: const Text(
+                  "Comenzar",
                 ),
-                label: Text(
-                  state.status == GameStatus.created ? "START" : "RESET",
-                ),
-              ),
-            ],
-          );
+              );
+            }
+          }
+          return Container();
         },
       ),
     );

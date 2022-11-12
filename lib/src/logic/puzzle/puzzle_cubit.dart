@@ -6,24 +6,27 @@ import 'package:my_puzzle/src/domain/models/tile.dart';
 part 'puzzle_state.dart';
 
 class PuzzleCubit extends Cubit<PuzzleState> {
-  PuzzleCubit() 
-  : super(PuzzleInitial(
-    crossAxisCount: 4, 
-    moves: 0, 
-    puzzle: Puzzle.create(4), 
-    solved: false, 
-    status: GameStatus.created,
-  ));
+  PuzzleCubit() : super(const PuzzleInitial());
 
-  PuzzleState _state = PuzzleState(
-    crossAxisCount: 4, 
-    puzzle: Puzzle.create(4), 
+  StartPuzzle _state = StartPuzzle(
+    crossAxisCount: 2, 
+    puzzle: Puzzle.create(2), 
     solved: false, 
     moves: 0, 
     status: GameStatus.created
   );
 
-  PuzzleState get puzzleState => _state;
+  void initPuzzle(){
+    emit(StartPuzzle(
+      crossAxisCount: _state.crossAxisCount,
+      puzzle: _state.puzzle,
+      solved: _state.solved,
+      moves: _state.moves,
+      status: _state.status
+    ));
+  }
+  
+  StartPuzzle get puzzleState => _state;
   Puzzle get puzzle => _state.puzzle;
 
   void onTileTapped(Tile tile) {
@@ -38,13 +41,13 @@ class PuzzleCubit extends Cubit<PuzzleState> {
       );
       emit(puzzleState);
       if (solved) {
-        // _streamController.sink.add(null);
+        emit(const OnFinish());
       }
     }
   }
 
   void shuffle() {
-    _state = state.copyWith(
+    _state = puzzleState.copyWith(
       puzzle: puzzle.shuffle(),
       status: GameStatus.playing,
       moves: 0,
